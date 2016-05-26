@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             try {
                 String [] part = localization.posicion.split(":");
-                if(!part[1].equals("Todavia")) {
+                if(!part[0].equals("0")) {
                     String urlfin=url + bus + ":" + localization.posicion;
 
                     Log.d("localizacion",urlfin);
