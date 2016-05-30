@@ -10,10 +10,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
+ *
  * Created by giovanny on 26/05/16.
+ *
  */
 public class ConexionServer {
-
     String sendToUrl(String myurl) throws IOException {
         InputStream is = null;
         int len = 100;
@@ -21,10 +22,8 @@ public class ConexionServer {
         try {
             URL url = new URL(myurl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
-
             // Starts the query
             conn.connect();
             int response = conn.getResponseCode();

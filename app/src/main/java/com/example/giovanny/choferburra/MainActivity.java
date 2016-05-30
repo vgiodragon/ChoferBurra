@@ -17,31 +17,36 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
-    private int TiempoCiclo=2000;
+
+public class MainActivity extends AppCompatActivity
+        implements AdapterView.OnItemSelectedListener {
+    private int TiempoCiclo=3000;
     boolean activado;
-    String url ="http://52.39.235.232:8081/burra/";
-    //String url ="http://127.0.0.1:8080/burra/";
+    String url ="http://52.37.128.123:8081/burra/";
 
     ConexionServer cs;
-    Localization localization;
+    //Localization localization;
+    GLocalization glocalization;
     ArrayAdapter<CharSequence> adapter;
     TextView longi,lati,resp;
     double longitud,latitud;
     String bus;
 
     private final int code_request=1234;
-
+    //GoogleApiClient mGoogleApiClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, code_request);
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_NETWORK_STATE,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            }, code_request);
         }
         activado =false;
         cs= new ConexionServer();
-        localization= new Localization(this);
+        //localization= new Localization(this);
+        glocalization = new GLocalization(this);
         longitud=0f;
         latitud=0f;
         longi = (TextView)findViewById(R.id.tLongitud);
@@ -56,16 +61,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
+        //setGoogleApliClient();
     }
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case code_request:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permission Granted
                     Toast.makeText(MainActivity.this, "COARSE LOCATION permitido", Toast.LENGTH_SHORT)
                             .show();
                 } else {
-                    // Permission Denied
                     Toast.makeText(MainActivity.this, "COARSE LOCATION no permitido", Toast.LENGTH_SHORT)
                             .show();
                 }
@@ -83,23 +87,38 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        activado=false;
+    }
+
+    @Override
     protected void onStop() {
+        glocalization.onStop();
         super.onStop();
-        activado = false;
     }
 
     private void HiloLanzador() {
-
         new Thread(new Runnable() {
             @Override
             public void run() {
                 while (activado) {
+                    //glocalization.onStop();
                     espTiempo(TiempoCiclo);
+                    //glocalization.onStart();
                     new RcfServer(url).execute();
+
                 }
             }
         }).start();
     }
+
+    @Override
+    protected void onStart() {
+        glocalization.onStart();
+        super.onStart();
+    }
+
 
     public void espTiempo(int Time){
         try {
@@ -128,16 +147,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         protected String doInBackground(String... urls) {
             String respues="...";
-
             try {
-                String [] part = localization.posicion.split(":");
-                if(!part[0].equals("0")) {
-                    String urlfin=url + bus + ":" + localization.posicion;
+                String [] part = glocalization.getLL().split(":");
+                if(!part[0].equals("0.1") &&!part[0].equals("-12.04")) {
+                    String urlfin=url + bus + ":" + glocalization.getLL();
 
                     Log.d("localizacion",urlfin);
-                    respues = cs.sendToUrl(urlfin);
+
+                    double longis=Double.parseDouble(part[0]);
+                    double latis=Double.parseDouble(part[1]);
+                    if(longitud!=longis || latitud!=latis){
+                        longitud=longis;
+                        latitud=latis;
+                        respues = cs.sendToUrl(urlfin);
+                    }
                 }
-            } catch (IOException e) {
+            }catch (IOException e) {
                 e.printStackTrace();
             }
             return respues;
@@ -146,34 +171,27 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         protected void onPostExecute(String result) {
             resp.setText(result);
-            String []posi = localization.posicion.split(":");
+            //String []posi = localization.posicion.split(":");
+            String []posi = glocalization.getLL().split(":");
             double longis=Double.parseDouble(posi[0]);
             double latis=Double.parseDouble(posi[1]);
             if(longitud!=longis || latitud!=latis){
                 longitud=longis;
                 latitud=latis;
-                Toast.makeText(getBaseContext(), "new: "+latitud+","+longitud, Toast.LENGTH_LONG).show();
             }
-
-
             longi.setText(posi[0]);
             lati.setText(posi[1]);
         }
     }
 
     public void mandarSenal(View view) {
-
         activado = ((CheckBox) view).isChecked();
         if(activado){
             Toast.makeText(this, "ACTIVADO!! ", Toast.LENGTH_LONG).show();
             HiloLanzador();
-        }
-
-        else{
+        }else {
             Toast.makeText(this, "desactivado!! ", Toast.LENGTH_LONG).show();
         }
-
-
     }
 
 }

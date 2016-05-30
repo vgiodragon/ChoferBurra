@@ -140,7 +140,7 @@
             android:layout_alignParentBottom="true"
             android:layout_alignLeft="@+id/tEstado"
             android:layout_alignStart="@+id/tEstado" />
-
     </LinearLayout>
+
 
 </RelativeLayout>

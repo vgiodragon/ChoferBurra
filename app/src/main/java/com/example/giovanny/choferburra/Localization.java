@@ -3,6 +3,7 @@ package com.example.giovanny.choferburra;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -30,10 +31,10 @@ public class Localization implements LocationListener {
             Log.d("localizacion","ERROR DE NULL");
         }
 
+
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                 1000,   // 1 sec
-                5, this);
-
+                10, this);
 
         posicion="0:-12.04:-77.03";
         Log.d("localizacion","Recien lanzo! ");
@@ -48,7 +49,7 @@ public class Localization implements LocationListener {
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.d("Latitude",status+":");
+        Log.d("STATUSCHANGED",provider+"_"+status+"_"+extras);
     }
 
     @Override
@@ -59,5 +60,9 @@ public class Localization implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
         Toast.makeText(ctx, "Gps turned off", Toast.LENGTH_LONG).show();
+    }
+
+    public void changeProvider(){
+
     }
 }

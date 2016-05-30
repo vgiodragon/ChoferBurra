@@ -1,4 +1,5 @@
 <resources>
+    <string name="google_maps_key">AIzaSyBlhU2ivtBBreQbydFqjMrYCGhKEMny4lQ</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="get_location">Get Location</string>
